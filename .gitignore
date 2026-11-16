@@ -1,0 +1,17 @@
+.venv/
+.venv-*/
+node_modules/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.env
+.env.*
+!.env.example
+!**/.env.example
+dist/
+build/
+backend-api/.venv/
+backend-api/uploads/
+database_backup/
+uploads/
+**/*.egg-info/
