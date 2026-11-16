@@ -15,3 +15,5 @@ backend-api/uploads/
 database_backup/
 uploads/
 **/*.egg-info/
+.vscode/
+Screenshot*.png
