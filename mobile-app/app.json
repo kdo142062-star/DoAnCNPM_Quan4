@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Q4 Explorer",
+    "slug": "q4-explorer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "q4explorer",
+    "splash": {
+      "backgroundColor": "#123b3b"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Your location helps find nearby District 4 attractions and start their audio guides.",
+        "NSCameraUsageDescription": "The camera scans attraction QR codes."
+      }
+    },
+    "android": {
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "CAMERA"],
+      "package": "vn.q4tourism.explorer"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Q4 Explorer to find nearby attractions and start audio guides."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Q4 Explorer to scan attraction QR codes."
+        }
+      ]
+    ]
+  }
+}
