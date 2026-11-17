@@ -427,6 +427,7 @@
     const description = poi.content && (poi.content[contentLanguage] || Object.values(poi.content)[0]);
     if (description) elements.detail.append(makeText("p", description));
     elements.detail.append(makeText("p", `${poi.category || "Điểm tham quan"} · Bán kính ${poi.geofence_radius_m || 0} m · ${LANGUAGE_NAMES[contentLanguage] || contentLanguage}`, "poi-meta"));
+    elements.detail.append(renderPoiDistances(poi));
     const audioUrl = getAudioUrl(poi);
     const play = makeText("button", audioUrl ? "▶  Nghe thuyết minh" : "Chưa có audio thuyết minh");
     play.type = "button";
@@ -434,6 +435,60 @@
     play.disabled = !audioUrl;
     play.addEventListener("click", () => playPoiAudio(poi, false));
     elements.detail.append(play);
+  }
+
+  function renderPoiDistances(poi) {
+    const section = document.createElement("section");
+    section.className = "poi-distance-section";
+    section.append(makeText("h3", "Khoảng cách đến các điểm khác"));
+
+    const coordinates = poi && poi.coordinates;
+    const latitude = coordinates && coordinates.latitude;
+    const longitude = coordinates && coordinates.longitude;
+    const origin = latitude === undefined || latitude === null || latitude === ""
+      || longitude === undefined || longitude === null || longitude === ""
+      ? null
+      : { latitude: Number(latitude), longitude: Number(longitude) };
+    if (!origin || !Number.isFinite(origin.latitude) || !Number.isFinite(origin.longitude)
+      || Math.abs(origin.latitude) > 90 || Math.abs(origin.longitude) > 180) {
+      section.append(makeText("p", "Điểm này chưa có tọa độ hợp lệ.", "empty-state"));
+      return section;
+    }
+
+    const distances = pois
+      .filter((other) => other.id !== poi.id)
+      .map((other) => {
+        const otherCoordinates = other.coordinates || {};
+        const otherLatitude = otherCoordinates.latitude;
+        const otherLongitude = otherCoordinates.longitude;
+        if (otherLatitude === undefined || otherLatitude === null || otherLatitude === ""
+          || otherLongitude === undefined || otherLongitude === null || otherLongitude === "") return null;
+        const destination = { latitude: Number(otherLatitude), longitude: Number(otherLongitude) };
+        if (!Number.isFinite(destination.latitude) || !Number.isFinite(destination.longitude)
+          || Math.abs(destination.latitude) > 90 || Math.abs(destination.longitude) > 180) return null;
+        return { poi: other, distance: distanceInMeters(origin, destination) };
+      })
+      .filter(Boolean)
+      .sort((left, right) => left.distance - right.distance);
+
+    if (!distances.length) {
+      section.append(makeText("p", "Chưa có điểm tham quan khác với tọa độ hợp lệ.", "empty-state"));
+      return section;
+    }
+
+    const list = document.createElement("ul");
+    list.className = "poi-distance-list";
+    distances.forEach(({ poi: other, distance }) => {
+      const item = document.createElement("li");
+      item.className = "poi-distance-item";
+      item.append(
+        makeText("span", other.name || "Điểm tham quan"),
+        makeText("strong", formatDistance(distance))
+      );
+      list.append(item);
+    });
+    section.append(list);
+    return section;
   }
 
   function getAudioUrl(poi) {
@@ -798,7 +853,8 @@
     const a = Math.sin(latitudeDelta / 2) ** 2
       + Math.cos(radians(from.latitude)) * Math.cos(radians(to.latitude))
       * Math.sin(longitudeDelta / 2) ** 2;
-    return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const boundedA = Math.min(1, Math.max(0, a));
+    return 6371000 * 2 * Math.atan2(Math.sqrt(boundedA), Math.sqrt(1 - boundedA));
   }
 
   function amenityType(tags) {

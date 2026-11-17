@@ -483,6 +483,36 @@ h1, h2, p { margin-top: 0; }
   width: 100%;
 }
 
+.poi-distance-section {
+  margin: 18px 0;
+}
+
+.poi-distance-section h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.poi-distance-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poi-distance-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.poi-distance-item strong {
+  flex: 0 0 auto;
+  color: var(--text);
+}
+
 /* Danh Sách Cards */
 .poi-list {
   display: grid;
