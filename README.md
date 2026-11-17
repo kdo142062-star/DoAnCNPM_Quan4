@@ -10,6 +10,14 @@
 - Trang Admin quản lý điểm tham quan, nội dung/bản dịch, audio, tài khoản, thống kê và hoạt động khách theo thời gian thực.
 - API FastAPI cung cấp xác thực, dữ liệu điểm tham quan, dịch thuật, âm thanh và báo cáo.
 
+## Use case đã triển khai
+
+- **UC01 – Quét mã QR:** `/access-qr` tạo mã mở trang khách. Mặc định dùng IP LAN khi truy cập localhost; có thể đặt `PUBLIC_BASE_URL` thành origin HTTPS khi dùng tunnel.
+- **UC03 – Xem bản đồ và danh sách điểm tham quan:** trang `admin-dashboard/tourist-pwa/tour.html` hiển thị bản đồ và danh sách POI.
+- **UC04 – Xem thông tin điểm tham quan:** chọn POI trên trang khách để xem nội dung và thông tin đã xuất bản.
+- **UC09 – Quản lý điểm tham quan:** Admin quản lý POI qua giao diện dashboard và API POI.
+- **UC13 – Báo cáo, bản đồ nhiệt và tổng hợp lượt ghé thăm:** Admin xem thống kê tại `/api/admin/reports` và bản đồ nhiệt tại `/api/admin/heatmap`.
+
 ## Cấu trúc dự án
 
 ```text

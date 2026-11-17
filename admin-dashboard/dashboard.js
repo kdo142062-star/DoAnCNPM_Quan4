@@ -1321,7 +1321,7 @@ function connectAdminSocket() {
       byId("monitor-online").textContent = data.online;
       const counts = new Map((data.poi_counts || []).map((item) => [item.poi_id, item]));
       renderPoiPresence([...counts.values()]);
-      setConnection(true, `${data.online*2} khách đang trực tuyến`);
+      setConnection(true, `${onlineCount} khách đang trực tuyến`);
       if (byId("section-monitor").classList.contains("active")) loadHeatmap();
     } catch {
       setConnection(false, "Không thể đọc dữ liệu WebSocket");

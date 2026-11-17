@@ -1,13 +1,41 @@
 import io
 import socket
 from html import escape
+from urllib.parse import urlsplit
 
 import qrcode
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from qrcode.image.svg import SvgPathImage
 
+from app.config import get_settings
+
 router = APIRouter(tags=["mobile access"])
+LOCAL_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
+
+
+def get_public_base_url(request: Request) -> str:
+    configured_url = get_settings().public_base_url.strip().rstrip("/")
+    parsed_configured_url = urlsplit(configured_url)
+    if (
+        parsed_configured_url.scheme not in {"http", "https"}
+        or not parsed_configured_url.hostname
+        or parsed_configured_url.username
+        or parsed_configured_url.password
+        or parsed_configured_url.path not in {"", "/"}
+        or parsed_configured_url.query
+        or parsed_configured_url.fragment
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="PUBLIC_BASE_URL must be an HTTP(S) origin without a path",
+        )
+    if parsed_configured_url.hostname.lower() not in LOCAL_HOSTNAMES:
+        return f"{parsed_configured_url.scheme}://{parsed_configured_url.netloc}"
+    if request.url.hostname and request.url.hostname.lower() in LOCAL_HOSTNAMES:
+        authority = f"{get_lan_ip()}:{request.url.port or 8000}"
+        return f"{request.url.scheme}://{authority}"
+    return f"{request.url.scheme}://{request.url.netloc}"
 
 
 def get_lan_ip() -> str:
@@ -30,12 +58,7 @@ def get_lan_ip() -> str:
 
 @router.get("/access-qr", response_class=HTMLResponse, include_in_schema=False)
 async def mobile_access_qr(request: Request) -> HTMLResponse:
-    # This QR opens the public tourist app; administrator login remains separate.
-    if request.url.hostname in {"localhost", "127.0.0.1", "::1"}:
-        authority = f"{get_lan_ip()}:{request.url.port or 8000}"
-    else:
-        authority = request.url.netloc
-    target_url = f"{request.url.scheme}://{authority}/tourist-pwa/tour.html"
+    target_url = f"{get_public_base_url(request)}/tourist-pwa/tour.html"
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=8, border=2)
     qr.add_data(target_url)
     qr.make(fit=True)
@@ -60,7 +83,7 @@ async def mobile_access_qr(request: Request) -> HTMLResponse:
 <body>
   <main>
     <h1>Mã QR truy cập ứng dụng khách</h1>
-    <p>Để điện thoại và máy tính cùng kết nối một mạng Wi-Fi, sau đó quét mã này.</p>
+    <p>Quét mã để mở trang khách. Với địa chỉ IP LAN, hãy kết nối điện thoại và máy tính cùng mạng Wi-Fi; domain HTTPS có thể dùng qua tunnel.</p>
     <div class="qr">{svg}</div>
     <p><a href="{escape(target_url, quote=True)}">{escape(target_url)}</a></p>
     <p>Nếu điện thoại không kết nối được, hãy cho phép Python/Uvicorn qua Windows Firewall trên mạng riêng.</p>
