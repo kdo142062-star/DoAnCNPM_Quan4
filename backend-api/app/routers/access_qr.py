@@ -30,6 +30,7 @@ def get_lan_ip() -> str:
 
 @router.get("/access-qr", response_class=HTMLResponse, include_in_schema=False)
 async def mobile_access_qr(request: Request) -> HTMLResponse:
+    # This QR opens the public tourist app; administrator login remains separate.
     if request.url.hostname in {"localhost", "127.0.0.1", "::1"}:
         authority = f"{get_lan_ip()}:{request.url.port or 8000}"
     else:
